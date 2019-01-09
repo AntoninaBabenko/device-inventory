@@ -37,6 +37,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.io.IOException;
 import java.math.BigInteger;
@@ -61,7 +62,7 @@ public class MainActivity extends Activity
     static final int REQUEST_GOOGLE_PLAY_SERVICES = 1002;
     static final int REQUEST_PERMISSION_GET_ACCOUNTS = 1003;
 
-    private static final String BUTTON_TEXT = "Call Google Sheets API NOW!!!";
+    private static final String BUTTON_TEXT = "Save";
     private static final String PREF_ACCOUNT_NAME = "accountName";
     private static final String[] SCOPES = {SheetsScopes.SPREADSHEETS};
 
@@ -79,7 +80,7 @@ public class MainActivity extends Activity
                 LinearLayout.LayoutParams.MATCH_PARENT);
         activityLayout.setLayoutParams(lp);
         activityLayout.setOrientation(LinearLayout.VERTICAL);
-        activityLayout.setPadding(16, 16, 16, 16);
+        activityLayout.setPadding(16, 50, 16, 16);
 
         ViewGroup.LayoutParams tlp = new ViewGroup.LayoutParams(
                 ViewGroup.LayoutParams.WRAP_CONTENT,
@@ -100,12 +101,13 @@ public class MainActivity extends Activity
 
         mOutputText = new TextView(this);
         mOutputText.setLayoutParams(tlp);
-        mOutputText.setPadding(16, 16, 16, 16);
+        mOutputText.setPadding(16, 50, 16, 16);
         mOutputText.setVerticalScrollBarEnabled(true);
         mOutputText.setMovementMethod(new ScrollingMovementMethod());
         mOutputText.setText(
-                "Click the \'" + BUTTON_TEXT + "\' button to test the API.");
+                "Click the \'" + BUTTON_TEXT + "\' button to to save the Phone Information to the spreadsheet");
         activityLayout.addView(mOutputText);
+        mOutputText.setTextSize(20);
 
         mProgress = new ProgressDialog(this);
         mProgress.setMessage("Calling Google Sheets API ...");
@@ -368,6 +370,30 @@ public class MainActivity extends Activity
         }
         return device_uuid;
     }
+    // get device Manufacturer (Google)
+    public static String getDeviceManufacturer() {
+        String s = "";
+        //s += android.os.Build.DEVICE;
+        s+=android.os.Build.MANUFACTURER;
+        return s;
+    }
+    // get device OS Version ()
+    public static String getDeviceOS() {
+        String s = "";
+        //s += android.os.Build.DEVICE;
+        s+=android.os.Build.VERSION.RELEASE;
+        return s;
+    }
+//    public static String getOSFamily() {
+//         String s = android.os.Build.VERSION.RELEASE;
+//        if s = "9.0" {
+//            return "Pie";
+//        } else if s = "8.0"{
+//            return ""
+//        }
+//    }
+
+
     /**
      * An asynchronous task that handles the Google Sheets API call.
      * Placing the API calls in their own task ensures the UI stays responsive.
@@ -414,7 +440,7 @@ public class MainActivity extends Activity
             List<String> results = new ArrayList<String>();
             ValueRange content = new ValueRange();
             content.setValues(Arrays.asList(
-                    Arrays.asList((Object) "dd", "CI", "Android", "Kit kat", getDeviceId(getApplicationContext()), "fdf", getDeviceName())
+                    Arrays.asList((Object) "CI", "Android", "Pie", getDeviceOS(), getDeviceId(getApplicationContext()), " ", getDeviceName(), getDeviceManufacturer())
                     )
             );
             AppendValuesResponse response = this.mService.spreadsheets().values()
@@ -435,7 +461,7 @@ public class MainActivity extends Activity
         protected void onPostExecute(List<String> output) {
             mProgress.hide();
             if (output == null || output.size() == 0) {
-                mOutputText.setText("No results returned.");
+                mOutputText.setText("Phone information has been sent to the spreadsheet");
             } else {
                 output.add(0, "Data retrieved using the Google Sheets API:");
                 mOutputText.setText(TextUtils.join("\n", output));
@@ -463,6 +489,9 @@ public class MainActivity extends Activity
             }
         }
     }
+
+
+
 }
 
 
